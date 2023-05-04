@@ -134,6 +134,44 @@
         />
 
 
+    <TextView
+        android:id="@+id/tempText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/graph"
+        android:layout_marginLeft="30dp"
+        android:gravity="center"
+        android:text="testing testing"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/uvText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/graph"
+        android:layout_marginLeft="6dp"
+        android:layout_toEndOf="@+id/expUV"
+        android:gravity="center"
+        android:text="..."
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/expUV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/graph"
+        android:layout_marginLeft="15dp"
+        android:layout_toEndOf="@+id/tempText"
+        android:gravity="center"
+        android:text="Expected UV: "
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:visibility="gone"/>
+
     <Button
         android:id="@+id/inSunButton"
         android:layout_width="198dp"
@@ -168,7 +206,8 @@
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="9dp"
         android:layout_marginBottom="10dp"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        />
 
 
 </RelativeLayout>

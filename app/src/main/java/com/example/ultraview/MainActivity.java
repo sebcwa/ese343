@@ -7,6 +7,7 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -15,10 +16,12 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -29,6 +32,9 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.provider.Settings;
+import android.location.Location;
+
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -39,6 +45,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -47,6 +56,23 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.UUID;
+
+import android.annotation.SuppressLint;
+import android.location.Location;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -75,8 +101,23 @@ public class MainActivity extends AppCompatActivity {
     private TextView uvtextview2,uvtitletext;
     private com.scwang.wave.MultiWaveHeader wave;
     private TextView uvValueTextView, timertotal, totaltime;
+    private TextView uvText, tempText, expUV;
     private GraphView graph;
     //graph.setVisibility(View.VISIBLE);
+
+    private static final int REQUEST_LOCATION = 1;
+    LocationManager locationManager;
+    String latitude, longitude;
+
+    // weather url to get JSON
+    String weather_url1 = "";
+
+    // api id for url
+    String api_id1 = "83264ea1a2b54a48a36346a0ef705e42";
+
+    private TextView textView;
+    private FusedLocationProviderClient fusedLocationClient;
+
     private
     LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(new DataPoint[] {
             new DataPoint(0, 0),
@@ -84,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
     });
 
     ActivityResultLauncher<Intent> googlePickerActivityResultPicker;
-    TextView textView;
 
     private class OnTokenAcquired implements AccountManagerCallback<Bundle> {
         public class networkThread implements Runnable {
@@ -134,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         AccountManager accountManager =
                 AccountManager.get(getApplicationContext());
         Intent googlePicker = AccountManager.newChooseAccountIntent(null, null,
@@ -159,7 +200,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-        googlePickerActivityResultPicker.launch(googlePicker);
+
+
+
+
         mLoadingScreen = findViewById(R.id.loading_screen);
         mLoadingScreen.setVisibility(View.VISIBLE);
         settings = findViewById(R.id.settingsButton);
@@ -173,12 +217,24 @@ public class MainActivity extends AppCompatActivity {
         graph = (GraphView) findViewById(R.id.graph);
         timertotal = findViewById(R.id.timertotal);
         totaltime = findViewById(R.id.totaltime);
+        tempText = findViewById(R.id.tempText);
+        uvText = findViewById(R.id.uvText);
+        expUV = findViewById(R.id.expUV);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        Log.e("lat", weather_url1);
+
+        Log.e("lat", "onClick");
+        // function to find the coordinates
+        // of the last location
+        obtainLocation();
 
         // Use a Handler and Runnable to simulate a delay in loading
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                googlePickerActivityResultPicker.launch(googlePicker);
                 // Remove the loading screen when loading is complete
                 mLoadingScreen.setVisibility(View.GONE);
                 wave.setVisibility(View.VISIBLE);
@@ -197,6 +253,9 @@ public class MainActivity extends AppCompatActivity {
                 graph.getGridLabelRenderer().reloadStyles();
                 timertotal.setVisibility(View.VISIBLE);
                 totaltime.setVisibility(View.VISIBLE);
+                uvText.setVisibility(View.VISIBLE);
+                tempText.setVisibility(View.VISIBLE);
+                expUV.setVisibility(View.VISIBLE);
 
             }
         }, 2500);
@@ -275,6 +334,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
 //        stopButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -287,7 +348,92 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+
     }
+
+    @SuppressLint("MissingPermission")
+    private void obtainLocation() {
+
+        ActivityCompat.requestPermissions( this,
+                new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            OnGPS();
+        } else {
+            getLocation();
+           // Log.e("loc", longitude);
+            weather_url1 = "https://api.weatherbit.io/v2.0/current?" + "lat=" + latitude + "&lon=" + longitude + "&key=" + api_id1 + "&units=" + "I";
+            Log.e("lat", weather_url1);
+            // this function will
+            // fetch data from URL
+            getConditions();
+        }
+
+        /*Log.e("lat", "function");
+        // get the last location
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // get the latitude and longitude
+                        // and create the http URL
+                        weather_url1 = "https://api.weatherbit.io/v2.0/current?" + "lat=" + location.getLatitude() + "&lon=" + location.getLongitude() + "&key=" + api_id1;
+                        Log.e("lat", weather_url1);
+                        // this function will
+                        // fetch data from URL
+                        getConditions();
+                    }
+                }); */
+    }
+
+    public void getConditions() {
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = weather_url1;
+        Log.e("lat", url);
+
+        // Request a string response
+        // from the provided URL.
+        StringRequest stringReq = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.e("lat", response);
+                        try {
+                            // get the JSON object
+                            JSONObject obj = new JSONObject(response);
+
+                            // get the Array from obj of name - "data"
+                            JSONArray arr = obj.getJSONArray("data");
+                            Log.e("lat obj1", arr.toString());
+
+                            // get the JSON object from the
+                            // array at index position 0
+                            JSONObject obj2 = arr.getJSONObject(0);
+                            Log.e("lat obj2", obj2.toString());
+
+                            // set the temperature and the city
+                            // name using getString() function
+                            tempText.setText(obj2.getString("temp") + "° in " + obj2.getString("city_name"));
+                            uvText.setText(obj2.getString("uv"));
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                // In case of any error
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        tempText.setText("That didn't work!");
+                    }
+                });
+        queue.add(stringReq);
+    }
+
 
 
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
@@ -423,6 +569,40 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    private void OnGPS() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", new  DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+    private void getLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                MainActivity.this,android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        } else {
+            Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (locationGPS != null) {
+                double lat = locationGPS.getLatitude();
+                double longi = locationGPS.getLongitude();
+                latitude = String.valueOf(lat);
+                longitude = String.valueOf(longi);
+            } else {
+                Toast.makeText(this, "Unable to find location.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 
