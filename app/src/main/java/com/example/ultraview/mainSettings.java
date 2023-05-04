@@ -15,39 +15,21 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.Shader;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RectShape;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
-import android.widget.SeekBar;
-import android.widget.Spinner;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.shapes.RectShape;
-import android.graphics.LinearGradient;
-import android.graphics.Shader;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jjoe64.graphview.series.DataPoint;
-
 import java.util.UUID;
 
-public class Settings extends AppCompatActivity {
+public class mainSettings extends AppCompatActivity {
     private int spf;
     private BluetoothGatt mGatt;
     private String skinTone;
@@ -117,22 +99,7 @@ public class Settings extends AppCompatActivity {
                 0xFFB46A46, 0xFF8C5543, 0xFF573D29, 0xFF40241A,0xFF27170F};
 
         // Create buttons and add them to the grid layout
-        for (int i = 0; i < 9; i++) {
-            Button button = new Button(this);
-            button.setBackgroundColor(buttonColors[i]);
-            button.setLayoutParams(new ViewGroup.LayoutParams(GridLayout.LayoutParams.WRAP_CONTENT, GridLayout.LayoutParams.WRAP_CONTENT));
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // Handle button click
-                    Toast.makeText(getApplicationContext(), "Skin Tone Selected", Toast.LENGTH_SHORT).show();
-                    Log.d("button", String.valueOf(button.getBackground()));
-                    button.setBackgroundColor(Color.WHITE);
-                   // Log.d("Skin Tone Selected- ", )
-                }
-            });
-            gridLayout.addView(button);
-        }
+        setGridLayout();
     }
 
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
@@ -184,6 +151,41 @@ public class Settings extends AppCompatActivity {
             });
         }
     };
+
+    private void setGridLayout(){
+        final Button[] previousButton = {null}; // variable to store reference to previously clicked button
+
+        GridLayout gridLayout = findViewById(R.id.grid_layout);
+        int[] buttonColors = { 0xFFFFF0D7, 0xFFF7C99C, 0xFFEDAE6B, 0xFFD69C6F,
+                0xFFB46A46, 0xFF8C5543, 0xFF573D29, 0xFF40241A,0xFF27170F};
+
+// Create buttons and add them to the grid layout
+        for (int i = 0; i < 9; i++) {
+            Button button = new Button(this);
+            button.setBackgroundColor(buttonColors[i]);
+            button.setLayoutParams(new ViewGroup.LayoutParams(GridLayout.LayoutParams.WRAP_CONTENT, GridLayout.LayoutParams.WRAP_CONTENT));
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getApplicationContext(), "Skin Tone Selected", Toast.LENGTH_SHORT).show();
+                    Log.d("button", String.valueOf(button.getBackground()));
+
+                    // reset the background color of the previously clicked button
+                    if (previousButton[0] != null) {
+                        previousButton[0].setBackgroundColor(buttonColors[gridLayout.indexOfChild(previousButton[0])]);
+                    }
+
+                    // set the background color of the current button to white
+                    button.setBackgroundColor(Color.WHITE);
+                    previousButton[0] = button;
+                    // setGridLayout();
+                }
+            });
+
+            gridLayout.addView(button);
+        }
+
+    }
 
 
 

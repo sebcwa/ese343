@@ -24,6 +24,7 @@ import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,7 +33,7 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.provider.Settings;
+//import android.provider.Settings;
 import android.location.Location;
 
 
@@ -103,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView uvValueTextView, timertotal, totaltime;
     private TextView uvText, tempText, expUV;
     private GraphView graph;
+    private int seconds3 = 0;
+    private boolean timerRunning3 = false;
     //graph.setVisibility(View.VISIBLE);
 
     private static final int REQUEST_LOCATION = 1;
@@ -175,31 +178,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        AccountManager accountManager =
-                AccountManager.get(getApplicationContext());
-        Intent googlePicker = AccountManager.newChooseAccountIntent(null, null,
-                new String[]{"com.google"}, null, null,
-                null, null);
-        googlePickerActivityResultPicker = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>(){
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        if (result.getResultCode() == RESULT_OK) {
-                            Bundle options = new Bundle();
-                            AccountManager accountManager = AccountManager.get(MainActivity.this);
-                            Account[] accounts = accountManager.getAccounts();
-                            for (Account a : accounts) {
-                                Log.d("TAG", "type--- " + a.type + " ---- name---- " + a.name);
-                                accountManager.invalidateAuthToken(a.type, null);
-                                accountManager.getAuthToken(a, "Manage your tasks",
-                                        options, MainActivity.this, new OnTokenAcquired(),
-                                        new Handler()); // Callback called if an error occurs
-                            }
-                        }
-                    }
-                }
-        );
+//        AccountManager accountManager =
+//                AccountManager.get(getApplicationContext());
+//        Intent googlePicker = AccountManager.newChooseAccountIntent(null, null,
+//                new String[]{"com.google"}, null, null,
+//                null, null);
+//        googlePickerActivityResultPicker = registerForActivityResult(
+//                new ActivityResultContracts.StartActivityForResult(),
+//                new ActivityResultCallback<ActivityResult>(){
+//                    @Override
+//                    public void onActivityResult(ActivityResult result) {
+//                        if (result.getResultCode() == RESULT_OK) {
+//                            Bundle options = new Bundle();
+//                            AccountManager accountManager = AccountManager.get(MainActivity.this);
+//                            Account[] accounts = accountManager.getAccounts();
+//                            for (Account a : accounts) {
+//                                Log.d("TAG", "type--- " + a.type + " ---- name---- " + a.name);
+//                                accountManager.invalidateAuthToken(a.type, null);
+//                                accountManager.getAuthToken(a, "Manage your tasks",
+//                                        options, MainActivity.this, new OnTokenAcquired(),
+//                                        new Handler()); // Callback called if an error occurs
+//                            }
+//                        }
+//                    }
+//                }
+//        );
 
 
 
@@ -234,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                googlePickerActivityResultPicker.launch(googlePicker);
+               // googlePickerActivityResultPicker.launch(googlePicker);
                 // Remove the loading screen when loading is complete
                 mLoadingScreen.setVisibility(View.GONE);
                 wave.setVisibility(View.VISIBLE);
@@ -281,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
         settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, Settings.class);
+                Intent intent = new Intent(MainActivity.this, mainSettings.class);
                 startActivity(intent);
             }
         });
@@ -289,9 +292,7 @@ public class MainActivity extends AppCompatActivity {
         sunscreenButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(spf == 0){
-                    spf = 50;
-                }
+
                 if (!timerRunning) {
 //                    EditText spfEditText = findViewById(R.id.spfEditText);
 //                    String spfString = spfEditText.getText().toString();
@@ -303,7 +304,16 @@ public class MainActivity extends AppCompatActivity {
                     int spf = prefs.getInt("spf", 50);
 
                     Log.d(TAG, "SPF input: " + spf);
-                    seconds = (600*spf)/(int)UVaverage;
+                    if(spf == 0){
+                        Toast.makeText(getApplicationContext(), "Please set SPF in settings",
+                                Toast.LENGTH_LONG).show();
+
+                    }else if (UVaverage == 0){
+                        seconds = (600*spf);
+                    }
+                    else{
+                        seconds = (600*spf)/(int)UVaverage;
+                    }
                     timerRunning = true;
                     startTimer2();
                 } else {
@@ -417,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
                             // set the temperature and the city
                             // name using getString() function
                             tempText.setText(obj2.getString("temp") + "° in " + obj2.getString("city_name"));
-                            uvText.setText(obj2.getString("uv"));
+                            uvText.setText(obj2.getString("uv").substring(0,3));
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -479,6 +489,15 @@ public class MainActivity extends AppCompatActivity {
             String UVindex1 = (char)values[1] + "."+(char)values[2] +  (char)values[4];
             float UV = Float.parseFloat(UVindex);
             float UV1 = Float.parseFloat(UVindex1);
+            if(UV > 8){
+                if (!timerRunning3) {
+                    timerRunning3 = true;
+                    startTimer3();
+                }
+            }else{
+                timerRunning3=false;
+                seconds3 = 0;
+            }
             Log.d(TAG, "Characteristic changed: " + UV);
             Log.d(TAG, "Characteristic changed1: " + UV1);
 
@@ -604,6 +623,28 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void startTimer3() {
+        final Handler handler3 = new Handler();
+        handler3.post(new Runnable() {
+
+            @Override
+            public void run() {
+                int hours3 = seconds3 / 3600;
+                int minutes3 = (seconds3 % 3600) / 60;
+                int remainingSeconds3 = seconds3 % 60;
+                if(minutes3>= 15){
+                    Toast.makeText(getApplicationContext(), "DANGER: High UV For Extended Period of Time!",
+                            Toast.LENGTH_LONG).show();
+                }
+                if (timerRunning3) {
+                    seconds3++;
+                    handler3.postDelayed(this, 1000);
+                }
+            }
+        });
+    }
+
 
 
 
