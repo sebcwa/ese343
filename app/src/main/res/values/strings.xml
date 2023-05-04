@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">ultraview</string>
+    <string name="uv_level_format">placeholder</string>
+    <string name="uvString"></string>
+
+    <string-array name="skin_tone_options">
+        <item>Light</item>
+        <item>Fair</item>
+        <item>Medium</item>
+        <item>Olive</item>
+        <item>Brown</item>
+        <item>Dark</item>
+    </string-array>
+</resources>

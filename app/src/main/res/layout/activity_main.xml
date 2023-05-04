@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/user"
+        android:layout_width="372dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-2dp"
+        android:layout_marginLeft="15dp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:visibility="gone"
+        />
+
+    <include
+        android:id="@+id/loading_screen"
+        layout="@layout/activity_loading"
+        android:visibility="gone"/>
+
+
+    <com.scwang.wave.MultiWaveHeader
+        android:id="@+id/waveHeader"
+        android:layout_width="match_parent"
+        android:layout_height="230dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="-1dp"
+        app:mwhCloseColor="#FFFFDE9F"
+        app:mwhStartColor="#FFFFCB66"
+        app:mwhWaveHeight="60dp"
+        android:visibility="gone"
+        />
+
+    <ImageButton
+        android:id="@+id/settingsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="-74dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="-20dp"
+        android:backgroundTint="#00FFFFFF"
+        android:src="@drawable/settings"
+        android:visibility="gone"
+        />
+
+
+    <TextView
+        android:id="@+id/uv_text_view2"
+        android:layout_width="372dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/settingsButton"
+        android:layout_marginTop="-2dp"
+        android:layout_marginLeft="15dp"
+        android:text="REAPPLY IN"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/timerTextView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/uv_text_view2"
+        android:layout_marginTop="-1dp"
+        android:layout_marginLeft="15dp"
+        android:gravity="center"
+        android:text="00:00:00"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:visibility="gone"
+        />
+
+    <TextView
+
+        android:id="@+id/uvTitleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/timerTextView2"
+        android:layout_marginTop="17dp"
+        android:layout_marginLeft="15dp"
+        android:text="CURRENT UV"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/uvValueTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textColor="@color/black"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="8dp"
+        android:layout_below="@id/uvTitleTextView"
+        android:visibility="gone"
+        />
+
+    <TextView
+
+        android:id="@+id/totaltime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/uvTitleTextView"
+        android:layout_marginTop="51dp"
+        android:layout_marginLeft="15dp"
+        android:text="TOTAL TIME IN SUN"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/timertotal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/totaltime"
+        android:layout_marginLeft="15dp"
+        android:layout_alignParentStart="true"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:text="00:00:00"
+        android:textSize="24sp"
+        android:visibility="gone"
+        />
+
+
+    <Button
+        android:id="@+id/inSunButton"
+        android:layout_width="198dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="334dp"
+        android:layout_marginLeft="15dp"
+        android:text="IM IN THE SUN"
+        android:textColor="@color/black"
+        android:visibility="gone"
+        />
+
+
+    <Button
+        android:id="@+id/sunscreenButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="-200dp"
+        android:layout_marginBottom="279dp"
+        android:layout_toRightOf="@+id/inSunButton"
+        android:text="Applied Sunscreen"
+        android:textColor="@color/black"
+        android:visibility="gone"
+        />
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph"
+        android:layout_width="391dp"
+        android:layout_height="183dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="9dp"
+        android:layout_marginBottom="10dp"
+        android:visibility="gone"/>
+
+
+</RelativeLayout>
