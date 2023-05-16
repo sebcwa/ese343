@@ -178,31 +178,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        AccountManager accountManager =
-//                AccountManager.get(getApplicationContext());
-//        Intent googlePicker = AccountManager.newChooseAccountIntent(null, null,
-//                new String[]{"com.google"}, null, null,
-//                null, null);
-//        googlePickerActivityResultPicker = registerForActivityResult(
-//                new ActivityResultContracts.StartActivityForResult(),
-//                new ActivityResultCallback<ActivityResult>(){
-//                    @Override
-//                    public void onActivityResult(ActivityResult result) {
-//                        if (result.getResultCode() == RESULT_OK) {
-//                            Bundle options = new Bundle();
-//                            AccountManager accountManager = AccountManager.get(MainActivity.this);
-//                            Account[] accounts = accountManager.getAccounts();
-//                            for (Account a : accounts) {
-//                                Log.d("TAG", "type--- " + a.type + " ---- name---- " + a.name);
-//                                accountManager.invalidateAuthToken(a.type, null);
-//                                accountManager.getAuthToken(a, "Manage your tasks",
-//                                        options, MainActivity.this, new OnTokenAcquired(),
-//                                        new Handler()); // Callback called if an error occurs
-//                            }
-//                        }
-//                    }
-//                }
-//        );
+        AccountManager accountManager =
+                AccountManager.get(getApplicationContext());
+        Intent googlePicker = AccountManager.newChooseAccountIntent(null, null,
+                new String[]{"com.google"}, null, null,
+                null, null);
+        googlePickerActivityResultPicker = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>(){
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == RESULT_OK) {
+                            Bundle options = new Bundle();
+                            AccountManager accountManager = AccountManager.get(MainActivity.this);
+                            Account[] accounts = accountManager.getAccounts();
+                            for (Account a : accounts) {
+                                Log.d("TAG", "type--- " + a.type + " ---- name---- " + a.name);
+                               accountManager.invalidateAuthToken(a.type, null);
+                                accountManager.getAuthToken(a, "Manage your tasks",
+                                        options, MainActivity.this, new OnTokenAcquired(),
+                                        new Handler()); // Callback called if an error occurs
+                           }
+                        }
+                    }
+                }
+        );
 
 
 
@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-               // googlePickerActivityResultPicker.launch(googlePicker);
+                googlePickerActivityResultPicker.launch(googlePicker);
                 // Remove the loading screen when loading is complete
                 mLoadingScreen.setVisibility(View.GONE);
                 wave.setVisibility(View.VISIBLE);
